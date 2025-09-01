@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>横向拖拽排序 - 无旋转版本</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a6fa5;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #666;
+            line-height: 1.5;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        
+        .list-container {
+            overflow-x: auto;
+            padding: 10px 0;
+            margin: 0 -10px;
+        }
+        
+        .list {
+            display: inline-flex;
+            flex-wrap: nowrap;
+            gap: 15px;
+            padding: 10px;
+        }
+        
+        .list-item {
+            width: 120px;
+            height: 150px;
+            background: linear-gradient(to bottom, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: move;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .list-item::before {
+            content: "≡";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            opacity: 0.7;
+        }
+        
+        .list-item .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .list-item .text {
+            font-size: 14px;
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .list-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+        }
+        
+        .list-item.moving {
+            background: linear-gradient(to bottom, #8e2de2 0%, #4a00e0 100%);
+            color: transparent;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            z-index: 10;
+            transform: scale(1.1); /* 移除了旋转效果，只保留缩放 */
+        }
+        
+        .list-item.moving .number,
+        .list-item.moving .text {
+            opacity: 0;
+        }
+        
+        .list-item.animating {
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .success-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 6px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .list-item {
+                width: 100px;
+                height: 130px;
+            }
+            
+            .list-item .number {
+                font-size: 28px;
+            }
+            
+            .list-item .text {
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .list-item {
+                width: 80px;
+                height: 110px;
+            }
+            
+            .list-item .number {
+                font-size: 24px;
+            }
+            
+            .list-item .text {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 22px;
+            }
+            
+            .instructions {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>横向拖拽排序与FLIP动画</h1>
+        
+        <div class="instructions">
+            左右拖拽项目进行重新排序，观察FLIP动画效果。<br>
+            拖拽时项目会放大并改变颜色，放置后会平滑移动到新位置。
+        </div>
+        
+        <div class="list-container">
+            <div class="list">
+                <div draggable="true" class="list-item">
+                    <div class="number">1</div>
+                    <div class="text">设计</div>
+                </div>
+                <div draggable="true" class="list-item">
+                    <div class="number">2</div>
+                    <div class="text">开发</div>
+                </div>
+                <div draggable="true" class="list-item">
+                    <div class="number">3</div>
+                    <div class="text">测试</div>
+                </div>
+                <div draggable="true" class="list-item">
+                    <div class="number">4</div>
+                    <div class="text">部署</div>
+                </div>
+                <div draggable="true" class="list-item">
+                    <div class="number">5</div>
+                    <div class="text">维护</div>
+                </div>
+                <div draggable="true" class="list-item">
+                    <div class="number">6</div>
+                    <div class="text">优化</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const list = document.querySelector('.list');
+        let source;
+        let firstPositions = [];
+        
+        // 获取元素位置信息
+        function getPositions() {
+            return Array.from(list.children).map(child => {
+                return child.getBoundingClientRect();
+            });
+        }
+        
+        // 拖拽开始
+        list.ondragstart = (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            source = e.target;
+            
+            // 记录所有元素的初始位置
+            firstPositions = getPositions();
+            
+            setTimeout(() => {
+                e.target.classList.add('moving');
+            }, 0);
+        };
+        
+        // 拖拽经过
+        list.ondragover = e => {
+            e.preventDefault();
+        }
+        
+        // 拖拽进入
+        list.ondragenter = (e) => {
+            e.preventDefault();
+            if (!source || e.target === list || e.target === source) {
+                return;
+            }
+            
+            const target = e.target.closest('.list-item');
+            if (!target) return;
+            
+            const sourceIndex = Array.from(list.children).indexOf(source);
+            const targetIndex = Array.from(list.children).indexOf(target);
+            
+            if (sourceIndex < targetIndex) {
+                list.insertBefore(source, target.nextSibling);
+            } else {
+                list.insertBefore(source, target);
+            }
+        }
+        
+        // 拖拽结束
+        list.ondragend = e => {
+            source.classList.remove('moving');
+            
+            // 获取所有元素的最终位置
+            const lastPositions = getPositions();
+            
+            // 应用FLIP动画
+            applyFlipAnimation(firstPositions, lastPositions);
+            
+            source = null;
+        }
+        
+        // 应用FLIP动画
+        function applyFlipAnimation(firstPositions, lastPositions) {
+            // 遍历所有元素
+            Array.from(list.children).forEach((child, index) => {
+                const first = firstPositions[index];
+                const last = lastPositions[index];
+                
+                // 检查位置是否发生变化
+                if (first && last && 
+                    (first.left !== last.left || first.top !== last.top)) {
+                    
+                    // 添加动画类
+                    child.classList.add('animating');
+                    
+                    // 计算位置变化
+                    const deltaX = first.left - last.left;
+                    const deltaY = first.top - last.top;
+                    
+                    // 应用反转变换 - 移除了旋转效果
+                    child.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.1)`;
+                    
+                    // 下一帧开始动画
+                    requestAnimationFrame(() => {
+                        // 启用过渡效果，移除变换，触发动画
+                        child.style.transform = '';
+                        
+                        // 动画结束后清除样式
+                        child.addEventListener('transitionend', () => {
+                            child.classList.remove('animating');
+                            child.style.transform = '';
+                        }, { once: true });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
