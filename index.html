@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<style type="text/css">
+		body{
+			margin:10% 30%;
+		}
+		.list-item{
+			margin: 6px;
+			height: 30px;
+			background: gray;
+			cursor: move;
+		}
+		.list-item.moving {
+			background: #ccc;
+			color: transparent;
+		}
+	</style>
+</head>
+<body>
+<div class="list">
+	<div draggable="true" class="list-item">1</div>
+	<div draggable="true" class="list-item">2</div>
+	<div draggable="true" class="list-item">3</div>
+	<div draggable="true" class="list-item">4</div>
+	<div draggable="true" class="list-item">5</div>
+</div>
+<script>
+		const list = document.querySelector('.list');
+		let source;
+
+
+		// 拖拽开始
+		list.ondragstart = (e) => {
+			// 鼠标按钮样式
+			e.dataTransfer.effectAllowed = 'move';
+			source = e.target;
+			setTimeout(() => {
+				e.target.classList.add('moving');
+			}, 0)
+		};
+
+
+		list.ondragover = e => {
+			e.preventDefault();
+		}
+
+		list.ondragenter = (e) => {
+			e.preventDefault();
+			if (!source) {
+				return;
+			}
+			const target = e.target;
+			if (target === list || target === source) {
+				return;
+			}
+			const sourceIndex = Array.from(list.children).indexOf(source);
+			const targetIndex = Array.from(list.children).indexOf(target);
+			if (sourceIndex < targetIndex) {
+				// console.log('向下');
+				list.insertBefore(target, source);
+			} else {
+				// console.log('向上');
+				list.insertBefore(source, target);
+			}
+		}
+
+		// 拖拽完成 样式还原
+		list.ondragend = e => {
+			source.classList.remove('moving');
+			source = null;
+		}
+	</script>
+</body>
+</html>
